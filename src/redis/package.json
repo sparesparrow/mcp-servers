@@ -1,6 +1,6 @@
 {
   "name": "redis",
-  "version": "1.0.0",
+  "version": "2025.2.16",
   "main": "index.js",
   "type": "module",
   "bin": {
