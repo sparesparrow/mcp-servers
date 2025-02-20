@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+.python-version
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
+venv/
+env/
+ENV/
+venv*/
+env*/
+ENV*/
+.venv/
+
+# Build/Release
+build/
+dist/
+*.whl
+*.tar.gz
+mcp_xpra_server.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-*
+*.tmproj
+*.project
+*.pydevproject
+*.ropeproject
+
+# Logs
+*.log
+logs/
+*.log.*
+log/
+
+# Local Development
+.env
+.env.local
+.env.*.local
+.envrc
+.local/
+.overrides.yaml
+
+# Testing
+test-results/
+junit.xml
+.mypy_cache/
+.pytest_cache/
+
+# Configurations
+/config/xpra.yaml
+/config/*.local.yaml
+
+# System Files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*~
