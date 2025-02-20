@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-system-context"
+version = "1.0.0"
+description = "MCP System Context Server: Provides system context to LLMs with file system, shell history, clipboard, system monitoring, and vector search capabilities."
+readme = "src/system-context/docs/README.md"
+authors = [
+    { name = "Your Name", email = "you@example.com" }
+]
+license = { text = "MIT" }
+dependencies = [
+    "pydantic",
+    "pydantic-settings",
+    "fastapi",
+    "uvicorn",
+    "python-dotenv",
+    "watchdog",
+    "asyncio"
+]
+
+[project.urls]
+Homepage = "https://modelcontextprotocol.io/"
+Documentation = "https://modelcontextprotocol.io/docs"
+Repository = "https://github.com/yourrepo/mcp-system-context" 
