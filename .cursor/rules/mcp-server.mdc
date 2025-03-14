@@ -1,0 +1,83 @@
+---
+description: "MCP Server Development Guidelines"
+globs: ["**/*.py", "**/*.ts", "**/*.js"]
+---
+
+# MCP Server Development Guidelines
+
+## Architecture
+
+MCP servers should follow these general principles:
+
+1. **Single Responsibility**: Each server should have a clear, focused purpose
+2. **Tool Organization**: Group related tools and provide consistent interfaces
+3. **Error Handling**: Include comprehensive error handling and user-friendly messages
+4. **Security**: Validate all inputs and implement proper authentication
+5. **Documentation**: Provide clear tool descriptions for effective LLM usage
+
+## Implementation Structure
+
+In Python with FastMCP, structure your code as follows:
+
+```python
+from mcp.server.fastmcp import FastMCP
+
+class MyMCPServer:
+    def __init__(self, **config):
+        """Initialize the server with configuration."""
+        self.mcp = FastMCP("server-name")
+        
+        # Load configuration
+        self._load_config(config)
+        
+        # Register tools
+        self.setup_tools()
+    
+    def _load_config(self, config):
+        """Load configuration from parameters or environment."""
+        # Implementation
+        
+    def setup_tools(self):
+        """Register all tools with the MCP server."""
+        @self.mcp.tool()
+        def tool_name(param1: type, param2: type) -> return_type:
+            """Tool description that helps LLMs understand when to use it.
+            
+            Args:
+                param1: Description
+                param2: Description
+                
+            Returns:
+                Description of return value
+            """
+            # Implementation
+    
+    def run(self):
+        """Run the MCP server."""
+        self.mcp.run()
+
+def main():
+    """Entry point for the server."""
+    server = MyMCPServer()
+    server.run()
+
+if __name__ == "__main__":
+    main()
+```
+
+## Tool Design
+
+1. **Clear Naming**: Use descriptive, action-oriented names (e.g., `generate_x`, `analyze_y`)
+2. **Consistent Parameters**: Follow consistent parameter patterns across tools
+3. **Detailed Docstrings**: Help the LLM understand when and how to use the tool
+4. **Input Validation**: Validate parameters before processing
+5. **Error Handling**: Return user-friendly error messages
+6. **Return Format**: Provide structured, consistent return values
+
+## Testing
+
+1. **Unit Tests**: Test each tool function in isolation
+2. **Integration Tests**: Test the complete server functionality
+3. **Mock External Services**: Use mocks for external API calls in tests
+4. **Test Error Cases**: Ensure proper handling of invalid inputs
+5. **Documentation Tests**: Verify docstring examples work as expected

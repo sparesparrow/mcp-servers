@@ -1,0 +1,52 @@
+{
+  "tutorial": {
+    "description": "A comprehensive tutorial template for various topics",
+    "arguments": [
+      {
+        "name": "topic",
+        "description": "The main topic of the tutorial",
+        "required": true
+      },
+      {
+        "name": "introduction",
+        "description": "Brief introduction to the topic",
+        "required": true
+      },
+      {
+        "name": "prerequisites",
+        "description": "List of prerequisites for the tutorial",
+        "required": true
+      },
+      {
+        "name": "step1",
+        "description": "Content for the first step",
+        "required": true
+      },
+      {
+        "name": "step2",
+        "description": "Content for the second step",
+        "required": true
+      },
+      {
+        "name": "step3",
+        "description": "Content for the third step",
+        "required": true
+      },
+      {
+        "name": "step4",
+        "description": "Content for the fourth step",
+        "required": true
+      },
+      {
+        "name": "conclusion",
+        "description": "Concluding remarks",
+        "required": true
+      },
+      {
+        "name": "resources",
+        "description": "Additional resources for further reading",
+        "required": false
+      }
+    ]
+  }
+} 

@@ -1,0 +1,134 @@
+---
+description: "MCP SOLID Principles Analyzer Server Guidelines"
+globs: ["**/solid*.py", "**/code_analysis*.py"]
+---
+
+# MCP SOLID Principles Analyzer Server Guidelines
+
+## Overview
+
+The SOLID Principles Analyzer MCP server provides tools for analyzing code against the SOLID principles of object-oriented design:
+
+1. **S**ingle Responsibility Principle (SRP)
+2. **O**pen/Closed Principle (OCP)
+3. **L**iskov Substitution Principle (LSP)
+4. **I**nterface Segregation Principle (ISP)
+5. **D**ependency Inversion Principle (DIP)
+
+## Tool Implementation
+
+### Analyze Code Tool
+
+The `analyze_code` tool evaluates code against SOLID principles:
+
+```python
+@mcp.tool()
+def analyze_code(code: str, principles: Optional[List[str]] = None) -> str:
+    """Analyze code for SOLID principles compliance.
+    
+    Args:
+        code: Code to analyze
+        principles: Optional list of specific principles to check
+        
+    Returns:
+        str: Structured analysis results
+    """
+    # Implementation
+```
+
+Key implementation considerations:
+- Support multiple programming languages
+- Provide specific examples of violations
+- Include severity levels for issues
+- Organize results by principle
+
+### Suggest Improvements Tool
+
+The `suggest_improvements` tool recommends code changes:
+
+```python
+@mcp.tool()
+def suggest_improvements(code: str, analysis: str) -> str:
+    """Suggest code improvements based on SOLID analysis.
+    
+    Args:
+        code: Original code
+        analysis: Analysis results from analyze_code
+        
+    Returns:
+        str: Improved code with explanations
+    """
+    # Implementation
+```
+
+Key implementation considerations:
+- Maintain original functionality
+- Provide before/after comparisons
+- Explain the rationale for each change
+- Support multiple programming languages
+
+### Check Compliance Tool
+
+The `check_compliance` tool focuses on a specific principle:
+
+```python
+@mcp.tool()
+def check_compliance(code: str, principle: str) -> str:
+    """Check code compliance with a specific SOLID principle.
+    
+    Args:
+        code: Code to check
+        principle: Specific SOLID principle to verify
+        
+    Returns:
+        str: Compliance assessment and recommendations
+    """
+    # Implementation
+```
+
+Key implementation considerations:
+- Deep analysis of a single principle
+- Provide compliance score or rating
+- Include educational content about the principle
+- Suggest specific refactoring approaches
+
+### Generate Tests Tool
+
+The `generate_tests` tool creates tests to verify improvements:
+
+```python
+@mcp.tool()
+def generate_tests(code: str, analysis: str) -> str:
+    """Generate tests to verify SOLID compliance.
+    
+    Args:
+        code: Code to test
+        analysis: Analysis results from analyze_code
+        
+    Returns:
+        str: Generated test cases
+    """
+    # Implementation
+```
+
+Key implementation considerations:
+- Support common testing frameworks
+- Focus tests on verifying principle adherence
+- Include boundary and edge cases
+- Provide assertions that validate compliance
+
+## Testing
+
+Test cases should include:
+- Analysis of code with known violations
+- Verification of improvement suggestions
+- Testing across multiple programming languages
+- Checking for accurate test generation
+- Error handling for invalid inputs
+
+## Integration
+
+The SOLID analyzer can integrate with:
+- GitHub servers to analyze repositories
+- File system servers to read and write code files
+- Memory servers to store analysis history

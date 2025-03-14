@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  prompt-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: prompt-manager:latest
+    container_name: mcp-prompt-manager
+    restart: unless-stopped
+    stdin_open: true  # Required for stdio transport
+    tty: true         # Keeps container running
+    volumes:
+      - prompt-manager-data:/data
+    environment:
+      - MCP_PROMPT_MANAGER_LOG_LEVEL=INFO
+      - MCP_PROMPT_MANAGER_PERSISTENCE=true
+      - MCP_PROMPT_MANAGER_PERSISTENCE_FILE=/data/templates.json
+    # For integration with other services in a larger setup, uncomment:
+    # networks:
+    #   - mcp-network
+
+volumes:
+  prompt-manager-data:
+    name: mcp-prompt-manager-data
+
+# For integration with other services in a larger setup, uncomment:
+# networks:
+#   mcp-network:
+#     name: mcp-network
+#     external: true 

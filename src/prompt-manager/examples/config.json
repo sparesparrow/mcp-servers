@@ -1,0 +1,7 @@
+{
+  "server_name": "prompt-manager",
+  "log_level": "INFO",
+  "template_dir": "./templates",
+  "persistence": true,
+  "persistence_file": "./data/templates.json"
+} 

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Individual servers
+  mermaid-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mermaid
+    stdin_open: true  # Required for stdio transport
+    tty: true         # Keeps container running
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      - ./src/mermaid:/app/src/mermaid  # For development hot-reloading
+    
+  solid-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.solid
+    stdin_open: true
+    tty: true
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      - ./src/solid:/app/src/solid  # For development hot-reloading
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    stdin_open: true
+    tty: true
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CACHE_TTL_SECONDS=3600
+      - CALLS_PER_MINUTE=15
+    volumes:
+      - ./src/orchestrator:/app/src/orchestrator  # For development hot-reloading
+    depends_on:
+      - mermaid-server
+      - solid-server
