@@ -1,0 +1,21 @@
+[Unit]
+Description=MCP Prompt Manager Service
+After=network.target
+
+[Service]
+Type=simple
+User=sparrow
+WorkingDirectory=/home/sparrow/projects/mcp-servers/src/prompt-manager
+ExecStart=/usr/bin/python -m mcp_prompt_manager
+Restart=on-failure
+RestartSec=5
+Environment=MCP_PROMPT_MANAGER_PERSISTENCE=true
+Environment=MCP_PROMPT_MANAGER_PERSISTENCE_FILE=/home/sparrow/mcp/data/prompt-templates.json
+Environment=MCP_PROMPT_MANAGER_LOG_LEVEL=INFO
+
+# Pipe stdio to a file for MCP communication
+StandardInput=file:/tmp/prompt-manager-in
+StandardOutput=file:/tmp/prompt-manager-out
+
+[Install]
+WantedBy=multi-user.target

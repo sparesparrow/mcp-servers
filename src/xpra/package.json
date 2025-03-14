@@ -1,0 +1,29 @@
+{
+  "name": "mcp-server-xpra",
+  "version": "0.1.1",
+  "description": "MCP server for managing Xpra sessions",
+  "main": "index.js",
+  "bin": {
+    "mcp-server-xpra": "./bin/mcp-server-xpra"
+  },
+  "scripts": {
+    "preinstall": "pip install -e .",
+    "postinstall": "chmod +x ./bin/mcp-server-xpra",
+    "test": "pytest",
+    "build": "python -m build",
+    "clean": "rm -rf dist/ build/ *.egg-info/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/mcp-servers.git"
+  },
+  "keywords": [
+    "mcp",
+    "xpra",
+    "server"
+  ],
+  "author": "Sparrow",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+} 

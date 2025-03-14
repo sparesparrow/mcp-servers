@@ -1,0 +1,39 @@
+# Build stage
+FROM python:3.11-slim AS build
+
+WORKDIR /app
+
+# Copy only the files needed for installing dependencies
+COPY requirements.txt .
+
+# Create wheels for all dependencies
+RUN pip wheel --no-cache-dir --wheel-dir=/app/wheels -r requirements.txt
+
+# Runtime stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy wheels from build stage
+COPY --from=build /app/wheels /app/wheels
+
+# Copy source code
+COPY src/orchestrator /app/src/orchestrator
+COPY src/mermaid /app/src/mermaid
+COPY src/solid /app/src/solid
+COPY src/__init__.py /app/src/
+
+# Install dependencies from wheels
+RUN pip install --no-index --find-links=/app/wheels/ anthropic mcp && \
+    rm -rf /app/wheels
+
+# Create non-root user for security
+RUN useradd -m mcp
+USER mcp
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# Run the MCP server
+ENTRYPOINT ["python", "-m", "src.orchestrator.code_diagram_orchestrator"] 

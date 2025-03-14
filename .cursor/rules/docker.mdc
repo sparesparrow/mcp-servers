@@ -1,0 +1,121 @@
+---
+description: "MCP Server Docker Containerization Guidelines"
+globs: ["**/Dockerfile", "**/docker-compose.yml"]
+---
+
+# MCP Server Docker Containerization Guidelines
+
+## Overview
+
+This guide provides best practices for containerizing MCP servers using Docker, enabling consistent deployment and easier integration with Claude Desktop and other MCP clients.
+
+## Dockerfile Structure
+
+Use multi-stage builds for efficient container images:
+
+```dockerfile
+# Build stage
+FROM python:3.11-slim AS build
+
+WORKDIR /app
+COPY pyproject.toml .
+COPY requirements.txt .
+# If using poetry
+RUN pip install poetry && \
+    poetry export -f requirements.txt > requirements.txt && \
+    pip wheel --no-cache-dir --wheel-dir=/app/wheels -r requirements.txt
+# If using pip directly
+RUN pip wheel --no-cache-dir --wheel-dir=/app/wheels -r requirements.txt
+
+# Runtime stage
+FROM python:3.11-slim
+
+WORKDIR /app
+# Copy only the wheels from the build stage
+COPY --from=build /app/wheels /app/wheels
+COPY src/ /app/src/
+
+# Install the wheels
+RUN pip install --no-index --find-links=/app/wheels/ $(ls /app/wheels/*.whl | xargs) && \
+    rm -rf /app/wheels
+
+# Non-root user for security
+RUN useradd -m mcp
+USER mcp
+
+# Environment configuration
+ENV PYTHONUNBUFFERED=1
+
+# Run the MCP server
+ENTRYPOINT ["python", "-m", "src.main"]
+```
+
+## Security Considerations
+
+1. **Non-root User**: Always run as a non-privileged user
+2. **API Keys**: Use environment variables for sensitive data
+3. **Read-only Filesystem**: Mount volumes as read-only where possible
+4. **Minimal Base Image**: Use slim variants to reduce attack surface
+5. **Package Vulnerabilities**: Scan for vulnerabilities in dependencies
+
+## Claude Desktop Integration
+
+Configure Claude Desktop to use your containerized MCP server:
+
+```json
+{
+  "mcpServers": {
+    "mermaid-generator": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "mcp-mermaid-server:latest"],
+      "env": {
+        "ANTHROPIC_API_KEY": "$ANTHROPIC_API_KEY"
+      }
+    },
+    "solid-analyzer": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "mcp-solid-server:latest"],
+      "env": {
+        "ANTHROPIC_API_KEY": "$ANTHROPIC_API_KEY"
+      }
+    }
+  }
+}
+```
+
+## Docker Compose Setup
+
+For development and testing, use Docker Compose:
+
+```yaml
+version: '3.8'
+
+services:
+  mermaid-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mermaid
+    stdin_open: true  # Required for stdio transport
+    tty: true         # Keeps container running
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+  
+  solid-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.solid
+    stdin_open: true
+    tty: true
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+```
+
+## Best Practices
+
+1. **Layer Caching**: Order Dockerfile commands to maximize cache usage
+2. **Environment Variables**: Use environment variables for configuration
+3. **Health Checks**: Implement container health checks
+4. **Volume Mounting**: Use volumes for persistent data
+5. **Container Registries**: Push images to private registries
+6. **Image Tagging**: Use semantic versioning for image tags
+7. **Log Management**: Configure proper logging to stdout/stderr

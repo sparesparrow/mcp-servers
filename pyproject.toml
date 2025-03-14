@@ -1,27 +1,41 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp-system-context"
-version = "1.0.0"
-description = "MCP System Context Server: Provides system context to LLMs with file system, shell history, clipboard, system monitoring, and vector search capabilities."
-readme = "src/system-context/docs/README.md"
+name = "mcp-servers"
+version = "0.1.0"
+description = "A collection of MCP servers for AI assistants"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
 authors = [
-    { name = "Your Name", email = "you@example.com" }
+    {name = "MCP Developer", email = "example@example.com"}
 ]
-license = { text = "MIT" }
 dependencies = [
-    "pydantic",
-    "pydantic-settings",
-    "fastapi",
-    "uvicorn",
-    "python-dotenv",
-    "watchdog",
-    "asyncio"
+    "mcp>=0.1.0",
+    "anthropic>=0.22.0",
 ]
 
-[project.urls]
-Homepage = "https://modelcontextprotocol.io/"
-Documentation = "https://modelcontextprotocol.io/docs"
-Repository = "https://github.com/yourrepo/mcp-system-context" 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+kde-launcher = [
+    "dbus-python>=1.2.18",
+    "PyGObject>=3.42.0",
+]
+
+[project.scripts]
+mcp-mermaid-server = "src.mermaid.mermaid_server:main"
+mcp-solid-server = "src.solid.solid_server:main"
+mcp-orchestrator = "src.orchestrator.code_diagram_orchestrator:main"
+mcp-kde-launcher = "src.kde-launcher.kde_launcher_server:main"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"

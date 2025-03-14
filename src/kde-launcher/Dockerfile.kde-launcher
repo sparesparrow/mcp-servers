@@ -1,0 +1,57 @@
+# Build stage
+FROM python:3.11-slim AS build
+
+WORKDIR /app
+COPY pyproject.toml .
+COPY requirements.txt .
+
+# Add D-Bus and KDE dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-dbus \
+    python3-gi \
+    libdbus-1-dev \
+    libdbus-glib-1-dev \
+    pkg-config \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build wheels
+RUN pip wheel --no-cache-dir --wheel-dir=/app/wheels -r requirements.txt
+RUN pip wheel --no-cache-dir --wheel-dir=/app/wheels dbus-python pygobject
+
+# Runtime stage
+FROM python:3.11-slim
+
+# Install runtime dependencies for D-Bus
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-dbus \
+    python3-gi \
+    dbus \
+    libdbus-1-3 \
+    libdbus-glib-1-2 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+# Copy wheels from build stage
+COPY --from=build /app/wheels /app/wheels
+COPY src/ /app/src/
+
+# Install wheels
+RUN pip install --no-index --find-links=/app/wheels/ $(ls /app/wheels/*.whl | xargs) && \
+    rm -rf /app/wheels
+
+# Non-root user for security
+RUN useradd -m mcp
+USER mcp
+
+# Environment configuration
+ENV PYTHONUNBUFFERED=1
+ENV DISPLAY=:0
+ENV DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+
+# Note: This container needs to have access to the host's D-Bus and X11 socket
+# to interact with KDE. When running, you'll need to mount these.
+
+# Run the KDE Launcher server
+ENTRYPOINT ["python", "-m", "src.kde-launcher.kde_launcher_server"] 

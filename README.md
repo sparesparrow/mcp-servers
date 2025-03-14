@@ -1,16 +1,18 @@
-# Model Context Protocol servers
+# MCP Integrated Server System
 
-This repository is a collection of *reference implementations* for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), as well as references
-to community built servers and additional resources.
+This project provides a comprehensive suite of Model Context Protocol (MCP) servers designed to work seamlessly together through the MCP Router. The system enables Large Language Models like Claude to securely access external tools and data sources through a standardized interface.
 
-The servers in this repository showcase the versatility and extensibility of MCP, demonstrating how it can be used to give Large Language Models (LLMs) secure, controlled access to tools and data sources.
-Each MCP server is implemented with either the [Typescript MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) or [Python MCP SDK](https://github.com/modelcontextprotocol/python-sdk).
+## System Overview
 
-> Note: Lists in this README are maintained in alphabetical order to minimize merge conflicts when adding new items.
+The MCP Integrated Server System consists of multiple specialized servers, each providing distinct capabilities:
 
-## 🌟 Reference Servers
+1. **Code Diagram Orchestrator**: Analyzes code, generates visualizations, and creates documentation
+2. **Project Orchestrator**: Creates and manages software projects, applies templates, and analyzes design patterns
+3. **Prompts Server**: Manages prompt templates, versions, and applies template variables
+4. **Memory Server**: Provides a knowledge graph for entity and relationship storage
+5. **Filesystem Server**: Enables secure file system access with configurable permissions
 
-These servers aim to demonstrate MCP features and the TypeScript and Python SDKs.
+All these servers connect to the **MCP Router**, which acts as a central hub for capability discovery, request routing, and health monitoring.
 
 - **[AWS KB Retrieval](src/aws-kb-retrieval-server)** - Retrieval from AWS Knowledge Base using Bedrock Agent Runtime
 - **[Brave Search](src/brave-search)** - Web and local search using Brave's Search API
@@ -394,86 +396,441 @@ For example, this will start the [Memory](src/memory) server:
 npx -y @modelcontextprotocol/server-memory
 ```
 
-Python-based servers in this repository can be used directly with [`uvx`](https://docs.astral.sh/uv/concepts/tools/) or [`pip`](https://pypi.org/project/pip/). `uvx` is recommended for ease of use and setup.
+The diagram above shows how the different servers integrate with each other through the MCP Router.
 
-For example, this will start the [Git](src/git) server:
-```sh
-# With uvx
-uvx mcp-server-git
+## Getting Started
 
-# With pip
-pip install mcp-server-git
-python -m mcp_server_git
+### Prerequisites
+
+- Python 3.9+
+- Node.js 16+
+- Docker and Docker Compose (optional, for containerized deployment)
+
+### Installation
+
+Clone the repositories:
+
+```bash
+# Clone MCP Servers repository
+git clone https://github.com/your-org/mcp-servers.git
+cd mcp-servers
+
+# Clone MCP Router repository (in a separate terminal)
+git clone https://github.com/your-org/mcp-router.git
+cd mcp-router
+
+# Clone MCP Project Orchestrator repository (in a separate terminal)
+git clone https://github.com/your-org/mcp-project-orchestrator.git
+cd mcp-project-orchestrator
+
+# Clone MCP Prompts repository (in a separate terminal)
+git clone https://github.com/your-org/mcp-prompts.git
+cd mcp-prompts
 ```
 
-Follow [these](https://docs.astral.sh/uv/getting-started/installation/) instructions to install `uv` / `uvx` and [these](https://pip.pypa.io/en/stable/installation/) to install `pip`.
+Install dependencies:
 
-### Using an MCP Client
-However, running a server on its own isn't very useful, and should instead be configured into an MCP client. For example, here's the Claude Desktop configuration to use the above server:
+```bash
+# MCP Servers
+cd mcp-servers
+pip install -r requirements.txt
+
+# MCP Router
+cd mcp-router
+npm install
+
+# MCP Project Orchestrator
+cd mcp-project-orchestrator
+pip install -r requirements.txt
+
+# MCP Prompts
+cd mcp-prompts
+npm install
+```
+
+### Automated Deployment
+
+The easiest way to deploy the entire system is using the automated deployment script:
+
+```bash
+cd mcp-servers
+python scripts/deploy_integrated_system.py --generate-configs
+```
+
+This will:
+1. Generate configuration files for all components
+2. Start the MCP Router
+3. Start all MCP servers
+4. Register the servers with the router
+5. Run health checks to verify the system is working correctly
+
+### Docker Deployment
+
+For a containerized deployment, use the `--docker` flag:
+
+```bash
+cd mcp-servers
+python scripts/deploy_integrated_system.py --generate-configs --docker
+```
+
+Or directly with Docker Compose:
+
+```bash
+cd mcp-servers
+python scripts/deploy_integrated_system.py --generate-configs --docker
+docker-compose -f docker-compose.yml up
+```
+
+### Manual Deployment
+
+If you prefer to start components individually:
+
+1. **Start the MCP Router**:
+   ```bash
+   cd mcp-router
+   npm run start:dev
+   ```
+
+2. **Start the Code Diagram Orchestrator**:
+   ```bash
+   cd mcp-servers/src/orchestrator
+   python enhanced_orchestrator.py
+   ```
+
+3. **Start the Project Orchestrator**:
+   ```bash
+   cd mcp-project-orchestrator/src/mcp_project_orchestrator
+   python -m enhanced_orchestrator
+   ```
+
+4. **Start the Prompts Server**:
+   ```bash
+   cd mcp-prompts
+   npm run start:dev
+   ```
+
+5. **Start the Memory Server**:
+   ```bash
+   cd mcp-servers/src/memory
+   python memory_server.py
+   ```
+
+6. **Start the Filesystem Server**:
+   ```bash
+   cd mcp-servers/src/filesystem
+   python filesystem_server.py
+   ```
+
+## Configuration
+
+The system uses a hierarchical configuration approach, allowing settings to be specified in:
+
+1. Configuration files (JSON or YAML)
+2. Environment variables
+3. Command-line arguments
+
+### Configuration Files
+
+Default configuration files are located in the `config` directory. You can generate them using:
+
+```bash
+python scripts/deploy_integrated_system.py --generate-configs
+```
+
+### Environment Variables
+
+Key environment variables:
+
+- `MCP_ROUTER_URL`: URL of the MCP Router (default: http://localhost:3000)
+- `MCP_SERVER_PORT`: Port for the server (defaults vary by server)
+- `MCP_CONFIG_FILE`: Path to configuration file
+- `MCP_LOG_LEVEL`: Logging level (DEBUG, INFO, WARNING, ERROR)
+- `ANTHROPIC_API_KEY`: API key for Anthropic services (required for orchestrator)
+
+### Command-Line Arguments
+
+Each server supports various command-line arguments. For a complete list, run with `--help`:
+
+```bash
+python enhanced_orchestrator.py --help
+```
+
+## Integration with Claude
+
+To integrate with Claude Desktop:
+
+1. Add the following to your Claude Desktop configuration:
 
 ```json
 {
   "mcpServers": {
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    "router": {
+      "command": "npm",
+      "args": ["run", "start"],
+      "cwd": "/path/to/mcp-router",
+      "env": {}
     }
   }
 }
 ```
 
-Additional examples of using the Claude Desktop as an MCP client might look like:
+2. Start Claude Desktop and use the router to access all registered servers
 
-```json
-{
-  "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
-    },
-    "git": {
-      "command": "uvx",
-      "args": ["mcp-server-git", "--repository", "path/to/git/repo"]
-    },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_TOKEN>"
-      }
-    },
-    "postgres": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
-    }
-  }
-}
+## Capabilities
+
+### Code Diagram Orchestrator
+
+- **Code Analysis**: Analyze code structure and patterns
+- **Code Visualization**: Generate diagrams from code
+- **Documentation Generation**: Create comprehensive documentation
+
+```python
+# Example: Analyze and visualize code
+response = requests.post(
+    "http://localhost:8001/tools/analyze_and_visualize",
+    json={"code": "class Example:\n    def __init__(self):\n        pass"}
+)
+result = response.json()
+# Access analysis and diagram in result
 ```
 
-## 🛠️ Creating Your Own Server
+### Project Orchestrator
 
-Interested in creating your own MCP server? Visit the official documentation at [modelcontextprotocol.io](https://modelcontextprotocol.io/introduction) for comprehensive guides, best practices, and technical details on implementing MCP servers.
+- **Project Orchestration**: Create and manage software projects
+- **Template Application**: Apply project templates based on requirements
+- **Design Pattern Analysis**: Identify design patterns in project descriptions
 
-## 🤝 Contributing
+```python
+# Example: Create a new project
+response = requests.post(
+    "http://localhost:8002/tools/orchestrate_new_project",
+    json={"user_idea": "Create a microservices application for order management"}
+)
+result = response.json()
+# Access project details in result
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for information about contributing to this repository.
+### Prompts Server
 
-## 🔒 Security
+- **Prompt Management**: Create, update, and delete prompts
+- **Template Application**: Apply variables to prompt templates
+- **Prompt Versioning**: Track changes to prompts over time
 
-See [SECURITY.md](SECURITY.md) for reporting security vulnerabilities.
+```python
+# Example: Apply a template
+response = requests.post(
+    "http://localhost:8003/tools/apply_template",
+    json={
+        "id": "prompt-id",
+        "variables": {"name": "Example", "description": "This is an example."}
+    }
+)
+result = response.json()
+# Access rendered prompt in result
+```
 
-## 📜 License
+### Memory Server
+
+- **Knowledge Graph Management**: Store and retrieve knowledge graph data
+- **Entity Storage**: Create and update entities with properties
+- **Relation Management**: Define relationships between entities
+- **Graph Querying**: Query the knowledge graph
+
+```python
+# Example: Create entities
+response = requests.post(
+    "http://localhost:8004/tools/create_entities",
+    json={
+        "entities": [
+            {
+                "name": "Example",
+                "entityType": "Concept",
+                "observations": ["This is an example entity."]
+            }
+        ]
+    }
+)
+result = response.json()
+# Access result
+```
+
+### Filesystem Server
+
+- **File Reading**: Read file content
+- **File Writing**: Write content to files
+- **Directory Listing**: List directory contents
+- **File Searching**: Search for files by pattern
+
+```python
+# Example: Read a file
+response = requests.post(
+    "http://localhost:8005/tools/read_file",
+    json={"path": "/path/to/file.txt"}
+)
+result = response.json()
+# Access file content in result
+```
+
+## Advanced Features
+
+### Router Integration
+
+Each server implements router integration that:
+
+1. Registers the server with the router on startup
+2. Reports health status periodically
+3. Responds to capability discovery requests
+4. Gracefully unregisters on shutdown
+
+The router maintains a registry of all servers and their capabilities, enabling:
+
+- **Dynamic Discovery**: Find servers by capability
+- **Failover Handling**: Redirect requests if a server fails
+- **Load Balancing**: Distribute requests among equivalent servers
+- **Health Monitoring**: Track server health in real time
+
+### Capability Management
+
+Servers declare their capabilities during registration, which can include:
+
+1. Tools they provide
+2. Resources they offer
+3. Detailed parameters and schemas
+
+The router uses this information to route client requests to the appropriate server. If multiple servers provide the same capability, the router can select one based on availability, load, or other criteria.
+
+### Cross-Server Collaboration
+
+The system enables servers to collaborate to fulfill complex requests:
+
+1. A server can request capabilities from other servers through the router
+2. The router coordinates the exchange of information between servers
+3. Results are combined and returned to the client
+
+For example, the Code Diagram Orchestrator can use the Filesystem Server to read code files and the Prompts Server to apply documentation templates.
+
+## Monitoring and Management
+
+### Health Checks
+
+The system includes built-in health monitoring through:
+
+```bash
+python scripts/deploy_integrated_system.py --healthcheck
+```
+
+This will check the health of all components and report their status.
+
+### Documentation Generation
+
+Generate comprehensive documentation for the architecture:
+
+```bash
+python scripts/generate_documentation.py --output docs/architecture.md
+```
+
+This produces a detailed documentation of the system architecture, including diagrams, capability descriptions, and integration patterns.
+
+### Integration Tests
+
+The system includes comprehensive integration tests:
+
+```bash
+python scripts/deploy_integrated_system.py --integration-test
+```
+
+This will deploy the system and run integration tests to verify that all components work together correctly.
+
+## Extending the System
+
+### Adding a New Server
+
+To create a new MCP server:
+
+1. Create a new directory in `src/`
+2. Implement the server using the MCP SDK
+3. Add router integration
+4. Register the server in `scripts/deploy_integrated_system.py`
+
+### Adding New Capabilities
+
+To add new capabilities to an existing server:
+
+1. Define the capability in the server's configuration
+2. Implement the corresponding tool or resource handler
+3. Update the server's router integration to advertise the new capability
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Router Connection Failures**:
+   - Ensure the router is running (`npm run start:dev` in the `mcp-router` directory)
+   - Check the router URL in the server configuration matches the actual router URL
+   - Verify there are no firewall rules blocking the connection
+
+2. **Server Registration Issues**:
+   - Check that the server's capabilities are properly defined
+   - Ensure the router URL is correct
+   - Look for errors in the server logs
+
+3. **Tool Execution Failures**:
+   - Verify that the required tools are registered correctly
+   - Check the parameters being passed to the tool
+   - Examine the server logs for detailed error information
+
+4. **Cross-Server Communication Issues**:
+   - Ensure all servers are registered with the same router
+   - Check that the required capabilities are advertised correctly
+   - Verify that the router can reach all servers
+
+### Logs
+
+Log files are stored in the `logs` directory and can be examined for troubleshooting:
+
+```bash
+cat logs/router.log
+cat logs/orchestrator.log
+# etc.
+```
+
+## Performance Optimization
+
+The system includes several performance optimizations:
+
+1. **Caching**: Results are cached to reduce duplicate computations
+2. **Connection Pooling**: Persistent connections reduce overhead
+3. **Asynchronous Processing**: Tasks run asynchronously where possible
+4. **Rate Limiting**: Prevents overload from excessive requests
+
+## Security Considerations
+
+The MCP system implements several security measures:
+
+1. **Authentication**: JWT-based authentication for secure access
+2. **Authorization**: Role-based access control for router endpoints
+3. **Filesystem Restrictions**: Limited access to specific directories
+4. **Input Validation**: Strict validation of all inputs
+5. **Transport Security**: TLS encryption for all communications
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 💬 Community
+## Acknowledgments
 
-- [GitHub Discussions](https://github.com/orgs/modelcontextprotocol/discussions)
+- The Model Context Protocol team for developing the MCP specification
+- All contributors to the MCP ecosystem
 
-## ⭐ Support
+## Documentation
 
-If you find MCP servers useful, please consider starring the repository and contributing new servers or improvements!
+For more detailed documentation:
 
----
-
-Managed by Anthropic, but built together with the community. The Model Context Protocol is open source and we encourage everyone to contribute their own servers and improvements!
+- [Architecture Overview](docs/architecture.md)
+- [API Reference](docs/api-reference.md)
+- [Integration Guide](docs/integration-guide.md)
+- [Development Guide](docs/development-guide.md)

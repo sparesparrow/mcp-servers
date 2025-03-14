@@ -1,0 +1,101 @@
+---
+description: "MCP Mermaid Diagram Server Guidelines"
+globs: ["**/mermaid*.py", "**/diagram*.py"]
+---
+
+# MCP Mermaid Diagram Server Guidelines
+
+## Overview
+
+The Mermaid MCP server provides tools for generating, analyzing, and modifying [Mermaid](https://mermaid.js.org/) diagrams using the Model Context Protocol. Mermaid is a markdown-based diagramming and charting tool that renders text definitions into diagrams.
+
+## Tool Implementation
+
+### Generate Diagram Tool
+
+The `generate_diagram` tool creates Mermaid syntax from natural language descriptions:
+
+```python
+@mcp.tool()
+def generate_diagram(query: str) -> str:
+    """Generate a Mermaid diagram from a text description.
+    
+    Args:
+        query: Detailed description of the diagram to create
+        
+    Returns:
+        str: Generated Mermaid diagram code
+    """
+    # Implementation
+```
+
+Key implementation considerations:
+- Ensure clear system prompts that focus on Mermaid syntax generation
+- Support all Mermaid diagram types (flowchart, sequence, class, etc.)
+- Validate that the output is valid Mermaid syntax
+- Handle edge cases where the query is ambiguous
+
+### Analyze Diagram Tool
+
+The `analyze_diagram` tool examines Mermaid syntax and provides insights:
+
+```python
+@mcp.tool()
+def analyze_diagram(diagram: str) -> str:
+    """Analyze a Mermaid diagram and provide insights.
+    
+    Args:
+        diagram: Mermaid diagram code to analyze
+        
+    Returns:
+        str: Analysis and insights about the diagram
+    """
+    # Implementation
+```
+
+Key implementation considerations:
+- Check diagram syntax validity before analysis
+- Provide insights on complexity, clarity, and structure
+- Suggest potential improvements
+- Identify any issues or anti-patterns
+
+### Modify Diagram Tool
+
+The `modify_diagram` tool updates existing Mermaid diagrams:
+
+```python
+@mcp.tool()
+def modify_diagram(diagram: str, modification: str) -> str:
+    """Modify an existing Mermaid diagram based on instructions.
+    
+    Args:
+        diagram: Original Mermaid diagram code
+        modification: Description of desired modifications
+        
+    Returns:
+        str: Modified Mermaid diagram code
+    """
+    # Implementation
+```
+
+Key implementation considerations:
+- Preserve original structure where possible
+- Validate the modified diagram produces valid Mermaid syntax
+- Support various modification types (add, remove, change)
+- Handle edge cases where modifications are ambiguous
+
+## Testing
+
+Test cases should include:
+- Generation of different diagram types
+- Analysis of both simple and complex diagrams
+- Various modification scenarios
+- Error handling for invalid inputs
+- Edge cases like empty or malformed inputs
+
+## Integration
+
+The Mermaid server can integrate with:
+- File system servers to save and load diagrams
+- GitHub servers to commit diagrams to repositories
+- Memory servers to store diagram history

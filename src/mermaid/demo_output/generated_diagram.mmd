@@ -1,0 +1,34 @@
+flowchart TD
+    A[Start] --> B{New User?}
+    B -->|Yes| C[Registration Form]
+    B -->|No| D[Login Form]
+    
+    C --> E[Enter Email/Password]
+    C --> F[Enter User Details]
+    E --> G[Validate Input]
+    F --> G
+    G -->|Invalid| C
+    G -->|Valid| H[Create Account]
+    H --> I[Send Verification Email]
+    I --> J[Verify Email]
+    J --> K[Account Created]
+    
+    D --> L[Enter Credentials]
+    L --> M[Validate Login]
+    M -->|Invalid| D
+    M -->|Valid| N[Login Successful]
+    
+    K --> O[Account Dashboard]
+    N --> O
+    
+    O --> P[Manage Profile]
+    O --> Q[Change Password]
+    O --> R[Logout]
+    R --> A
+
+%% Styling
+classDef default fill:#f9f9f9,stroke:#333333,stroke-width:1px,color:#333333,rx:5px,ry:5px
+classDef highlight fill:#ff7700,stroke:#333333,stroke-width:2px,color:white,rx:5px,ry:5px
+classDef success fill:#00aa00,stroke:#333333,stroke-width:1px,color:white,rx:5px,ry:5px
+classDef warning fill:#ffaa00,stroke:#333333,stroke-width:1px,color:#333333,rx:5px,ry:5px
+classDef error fill:#dd0000,stroke:#333333,stroke-width:1px,color:white,rx:5px,ry:5px
