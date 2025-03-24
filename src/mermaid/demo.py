@@ -16,7 +16,13 @@ from typing import Dict, Any, Optional
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
+# Import server classes
 from src.mermaid.mermaid_server import MermaidServer
+try:
+    from src.mermaid.mermaid_orchestrator import MermaidOrchestratorServer
+    ORCHESTRATOR_AVAILABLE = True
+except ImportError:
+    ORCHESTRATOR_AVAILABLE = False
 
 # ANSI color codes for terminal output
 COLORS = {
@@ -245,6 +251,51 @@ def demo_preview_diagram(server: MermaidServer, diagram: str, theme: Optional[st
     except Exception as e:
         print_colored(f"Error: {str(e)}", "RED")
 
+def demo_orchestrator_features(server) -> None:
+    """Demonstrate orchestrator-specific features."""
+    if not hasattr(server, 'generate_class_diagram'):
+        print_colored("Orchestrator features not available", "RED")
+        return
+    
+    print_section("Orchestrator Features")
+    
+    # Simple code example
+    code = """
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+        
+    def get_profile(self):
+        return f"{self.name} <{self.email}>"
+
+class Admin(User):
+    def __init__(self, name, email, role):
+        super().__init__(name, email)
+        self.role = role
+        
+    def get_permissions(self):
+        return ["read", "write", "admin"]
+"""
+    
+    print_colored("Sample Code:", "BOLD")
+    print(code)
+    print()
+    
+    # Generate class diagram
+    print_colored("Generating class diagram...", "YELLOW")
+    try:
+        diagram = server.generate_class_diagram(code)
+        print_colored("Generated Class Diagram:", "BOLD")
+        print(diagram)
+        
+        # Save diagram
+        with open("./demo_output/class_diagram.mmd", "w") as f:
+            f.write(diagram)
+        print_colored("Class diagram saved to ./demo_output/class_diagram.mmd", "GREEN")
+    except Exception as e:
+        print_colored(f"Error generating class diagram: {str(e)}", "RED")
+
 def main() -> None:
     """Main demo function."""
     parser = argparse.ArgumentParser(description="Mermaid MCP Server Demo")
@@ -255,6 +306,8 @@ def main() -> None:
                         help="Directory to save output files")
     parser.add_argument("--custom-themes-path", 
                         help="Path to custom themes JSON file")
+    parser.add_argument("--server-type", choices=["standard", "orchestrator"],
+                        default="standard", help="Type of server to demonstrate")
     
     args = parser.parse_args()
     
@@ -264,18 +317,32 @@ def main() -> None:
         print_colored("Error: Anthropic API key is required. Provide it with --api-key or set ANTHROPIC_API_KEY environment variable.", "RED")
         sys.exit(1)
     
+    # Check if orchestrator is requested but not available
+    if args.server_type == "orchestrator" and not ORCHESTRATOR_AVAILABLE:
+        print_colored("Warning: Orchestrator server requested but dependencies are not available. Falling back to standard server.", "YELLOW")
+        args.server_type = "standard"
+    
     # Create output directory if it doesn't exist
     os.makedirs(args.output_dir, exist_ok=True)
     
-    print_colored("Mermaid MCP Server Demo", "BOLD")
+    print_colored(f"Mermaid MCP {args.server_type.capitalize()} Server Demo", "BOLD")
     print(f"Using theme: {args.theme}")
     
-    # Initialize server
-    server = MermaidServer(
-        api_key=api_key, 
-        default_theme=args.theme,
-        custom_themes_path=args.custom_themes_path
-    )
+    # Initialize server based on type
+    if args.server_type == "orchestrator" and ORCHESTRATOR_AVAILABLE:
+        server = MermaidOrchestratorServer(
+            api_key=api_key, 
+            default_theme=args.theme,
+            custom_themes_path=args.custom_themes_path
+        )
+        print_colored("Using orchestrator server with extended capabilities", "GREEN")
+    else:
+        server = MermaidServer(
+            api_key=api_key, 
+            default_theme=args.theme,
+            custom_themes_path=args.custom_themes_path
+        )
+        print_colored("Using standard Mermaid server", "GREEN")
     
     # Demo theme info
     demo_theme_info(server)
@@ -337,6 +404,10 @@ def main() -> None:
                     print_colored(f"Failed to remove custom theme '{custom_theme}'", "RED")
             except Exception as e:
                 print_colored(f"Error: {str(e)}", "RED")
+    
+    # Demonstrate orchestrator features if available
+    if args.server_type == "orchestrator" and ORCHESTRATOR_AVAILABLE:
+        demo_orchestrator_features(server)
     
     print_section("Demo Complete")
     print_colored(f"Output files have been saved to {args.output_dir}/", "GREEN")

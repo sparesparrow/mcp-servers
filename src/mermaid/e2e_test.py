@@ -16,7 +16,8 @@ import time
 import base64
 import subprocess
 import requests
-from typing import Dict, Any, Optional
+import argparse
+from typing import Dict, Any, Optional, Tuple
 
 # Config
 MCP_SERVER_NAME = "mermaid-generator"
@@ -43,9 +44,13 @@ def print_failure(text: str) -> None:
     """Print a failure message with the given text."""
     print(f"❌ {text}")
 
-def start_server() -> subprocess.Popen:
-    """Start the MCP server as a subprocess."""
-    print_step("Starting Mermaid MCP server...")
+def start_server(server_type: str = "standard") -> subprocess.Popen:
+    """Start the MCP server as a subprocess.
+    
+    Args:
+        server_type: Type of server to start ('standard' or 'orchestrator')
+    """
+    print_step(f"Starting Mermaid MCP {server_type} server...")
     
     # Check environment variable
     if not os.environ.get("ANTHROPIC_API_KEY"):
@@ -55,7 +60,11 @@ def start_server() -> subprocess.Popen:
         sys.exit(1)
     
     # Start the server
-    cmd = ["python", "-m", "src.mermaid.mermaid_server"]
+    if server_type == "orchestrator":
+        cmd = ["python", "-m", "src.mermaid.mermaid_orchestrator"]
+    else:
+        cmd = ["python", "-m", "src.mermaid.mermaid_server"]
+    
     env = os.environ.copy()
     env["DEFAULT_THEME"] = "pastel"
     
@@ -163,7 +172,7 @@ def test_theme_info() -> bool:
     
     return True
 
-def test_generate_diagram() -> (bool, Optional[str]):
+def test_generate_diagram() -> Tuple[bool, Optional[str]]:
     """Test diagram generation."""
     print_step("Testing diagram generation...")
     
@@ -327,12 +336,65 @@ def test_custom_theme() -> bool:
     print_success("Custom theme removed successfully")
     return True
 
-def run_tests() -> None:
-    """Run all tests."""
-    print_header("MERMAID MCP SERVER END-TO-END TESTS")
+def test_orchestrator_features() -> bool:
+    """Test orchestrator-specific features if available."""
+    print_step("Testing orchestrator features...")
+    
+    # Try to generate a class diagram from code
+    simple_code = """
+    class User:
+        def __init__(self, name, email):
+            self.name = name
+            self.email = email
+            
+        def get_info(self):
+            return f"{self.name} <{self.email}>"
+    
+    class Admin(User):
+        def __init__(self, name, email, access_level):
+            super().__init__(name, email)
+            self.access_level = access_level
+            
+        def get_permissions(self):
+            return f"Access level: {self.access_level}"
+    """
+    
+    try:
+        response = make_request("generate_class_diagram", {"code": simple_code})
+        
+        if "error" in response:
+            print_failure(f"Failed to generate class diagram: {response['error']}")
+            print_step("Orchestrator features may not be available")
+            return False
+        
+        diagram = response.get("result", "")
+        if diagram and "classDiagram" in diagram:
+            print_success("Class diagram generated successfully")
+            
+            # Save the class diagram
+            with open(f"{TEST_OUTPUT_DIR}/class_diagram.mmd", "w") as f:
+                f.write(diagram)
+            
+            print_success(f"Class diagram saved to {TEST_OUTPUT_DIR}/class_diagram.mmd")
+            return True
+        else:
+            print_failure("Response doesn't appear to be a valid class diagram")
+            return False
+    except Exception as e:
+        print_failure(f"Error testing orchestrator features: {str(e)}")
+        print_step("Orchestrator features not available")
+        return False
+
+def run_tests(server_type: str = "standard") -> None:
+    """Run all tests.
+    
+    Args:
+        server_type: Type of server to test ('standard' or 'orchestrator')
+    """
+    print_header(f"MERMAID MCP {server_type.upper()} SERVER END-TO-END TESTS")
     
     # Start the server
-    server_process = start_server()
+    server_process = start_server(server_type)
     
     try:
         # Basic server tests
@@ -363,6 +425,10 @@ def run_tests() -> None:
         if not test_custom_theme():
             return
             
+        # Test orchestrator features if applicable
+        if server_type == "orchestrator":
+            test_orchestrator_features()
+            
         # All tests passed!
         print_header("ALL TESTS PASSED SUCCESSFULLY")
         print("Test outputs are available in the following directory:")
@@ -373,4 +439,9 @@ def run_tests() -> None:
         kill_server(server_process)
 
 if __name__ == "__main__":
-    run_tests() 
+    parser = argparse.ArgumentParser(description="Mermaid MCP Server End-to-End Tests")
+    parser.add_argument("--server-type", choices=["standard", "orchestrator"], 
+                        default="standard", help="Type of server to test")
+    
+    args = parser.parse_args()
+    run_tests(args.server_type) 

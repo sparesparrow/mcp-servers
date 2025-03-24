@@ -39,7 +39,8 @@ To use this server with the Claude Desktop app, add the following configuration 
         "-i", 
         "--rm", 
         "mcp/postgres", 
-        "postgresql://host.docker.internal:5432/mydb"]
+        "postgresql://postgres:postgres@localhost:5432/mcp"
+      ]
     }
   }
 }
@@ -55,7 +56,7 @@ To use this server with the Claude Desktop app, add the following configuration 
       "args": [
         "-y",
         "@modelcontextprotocol/server-postgres",
-        "postgresql://localhost/mydb"
+        "postgresql://postgres:postgres@localhost:5433/mcp"
       ]
     }
   }

@@ -11,6 +11,14 @@ This MCP server provides tools for generating, analyzing, and modifying [Mermaid
 - **Create custom themes** to match your brand or preferences
 - **Generate SVG previews** of diagrams for embedding in documents
 - **Validate diagrams** to ensure they follow proper Mermaid syntax
+- **Advanced orchestration** with code analysis and class diagram generation (with orchestrator version)
+
+## Server Variants
+
+This package provides two MCP server variants:
+
+1. **Standard Server**: Core Mermaid diagram generation and manipulation functionality
+2. **Orchestrator Server**: Enhanced version that includes code analysis and SOLID principle evaluation
 
 ## Installation
 
@@ -38,10 +46,16 @@ pip install -e .
 
 ### Running the server
 
-You can run the server directly:
+You can run the standard server directly:
 
 ```bash
 python -m src.mermaid.mermaid_server
+```
+
+Or run the orchestrator version with additional capabilities:
+
+```bash
+python -m src.mermaid.mermaid_orchestrator
 ```
 
 ### Environment Variables
@@ -51,10 +65,14 @@ python -m src.mermaid.mermaid_server
 - `CALLS_PER_MINUTE`: Rate limit for API calls (default: 25)
 - `DEFAULT_THEME`: Default color theme (default: "default")
 - `CUSTOM_THEMES_PATH`: Path to JSON file containing custom themes (default: "~/.mermaid_themes.json")
+- `ORCHESTRATOR_CALLS_PER_MINUTE`: Rate limit for orchestrator API calls (default: 15, orchestrator only)
+- `SERVER_TYPE`: When using Docker, set to "standard" or "orchestrator" (default: "standard")
 
 ## Tools
 
-### generate_diagram
+### Standard Server Tools
+
+#### generate_diagram
 
 Generates a Mermaid diagram from a text description with optional styling.
 
@@ -70,7 +88,7 @@ Generates a Mermaid diagram from a text description with optional styling.
 
 Available themes: `default`, `dark`, `pastel`, `vibrant`, and any custom themes you've created
 
-### analyze_diagram
+#### analyze_diagram
 
 Analyzes a Mermaid diagram and provides insights.
 
@@ -83,7 +101,7 @@ Analyzes a Mermaid diagram and provides insights.
 }
 ```
 
-### modify_diagram
+#### modify_diagram
 
 Modifies an existing Mermaid diagram based on instructions.
 
@@ -105,7 +123,7 @@ Parameters:
 - `theme`: Optional color theme to apply
 - `keep_styling`: Whether to preserve existing styling (default: true)
 
-### preview_diagram
+#### preview_diagram
 
 Generates an SVG preview of a Mermaid diagram.
 
@@ -125,7 +143,7 @@ Returns a base64-encoded SVG string that can be embedded in HTML or Markdown:
 <img src="data:image/svg+xml;base64,BASE64_ENCODED_SVG_HERE" alt="Mermaid Diagram" />
 ```
 
-### validate_diagram
+#### validate_diagram
 
 Validates Mermaid diagram syntax.
 
@@ -138,7 +156,7 @@ Validates Mermaid diagram syntax.
 }
 ```
 
-### add_custom_theme
+#### add_custom_theme
 
 Adds a new custom color theme.
 
@@ -173,7 +191,7 @@ Required color keys:
 
 All colors must be valid hex codes (#RRGGBB or #RGB).
 
-### remove_custom_theme
+#### remove_custom_theme
 
 Removes a custom color theme.
 
@@ -188,7 +206,7 @@ Removes a custom color theme.
 
 Note: Built-in themes (default, dark, pastel, vibrant) cannot be removed.
 
-### get_theme_info
+#### get_theme_info
 
 Gets information about available color themes.
 
@@ -201,7 +219,7 @@ Gets information about available color themes.
 }
 ```
 
-### clear_cache
+#### clear_cache
 
 Clears the server's response cache.
 
@@ -212,7 +230,7 @@ Clears the server's response cache.
 }
 ```
 
-### get_status
+#### get_status
 
 Gets the current server status.
 
@@ -220,6 +238,54 @@ Gets the current server status.
 {
   "tool": "get_status",
   "params": {}
+}
+```
+
+### Orchestrator Server Tools
+
+In addition to all standard tools, the orchestrator server provides these additional tools:
+
+#### analyze_and_visualize
+
+Analyzes code against SOLID principles and generates a diagram from the results.
+
+```json
+{
+  "tool": "analyze_and_visualize",
+  "params": {
+    "code": "class User { ... }",
+    "principles": ["SingleResponsibility", "OpenClosed"]
+  }
+}
+```
+
+Parameters:
+- `code`: Code to analyze
+- `principles`: Optional list of specific principles to check
+
+#### generate_class_diagram
+
+Generates a class diagram from code.
+
+```json
+{
+  "tool": "generate_class_diagram",
+  "params": {
+    "code": "class User { ... }"
+  }
+}
+```
+
+#### create_documentation
+
+Creates comprehensive documentation for code with analysis and diagrams.
+
+```json
+{
+  "tool": "create_documentation",
+  "params": {
+    "code": "class User { ... }"
+  }
 }
 ```
 
@@ -256,7 +322,7 @@ Example custom theme:
 
 ## Integration with Claude Desktop
 
-To use this server with Claude Desktop, add the following to your `.claude-config.json` file:
+To use the standard server with Claude Desktop, add the following to your `.claude-config.json` file:
 
 ```json
 {
@@ -274,6 +340,24 @@ To use this server with Claude Desktop, add the following to your `.claude-confi
 }
 ```
 
+To use the orchestrator server instead:
+
+```json
+{
+  "mcpServers": {
+    "mermaid-orchestrator": {
+      "command": "python",
+      "args": ["-m", "src.mermaid.mermaid_orchestrator"],
+      "env": {
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+        "DEFAULT_THEME": "pastel",
+        "CUSTOM_THEMES_PATH": "${HOME}/.mermaid_themes.json"
+      }
+    }
+  }
+}
+```
+
 Alternatively, using Docker:
 
 ```json
@@ -281,7 +365,7 @@ Alternatively, using Docker:
   "mcpServers": {
     "mermaid-generator": {
       "command": "docker",
-      "args": ["run", "-i", "--rm", "mcp-mermaid-server"],
+      "args": ["run", "-i", "--rm", "-e", "SERVER_TYPE=standard", "mcp-mermaid-server"],
       "env": {
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
         "DEFAULT_THEME": "pastel"
@@ -358,6 +442,54 @@ This diagram shows:
 
 You can use this theme for all your future diagrams, and it will be saved for future sessions as well."
 
+### Analyzing Code with the Orchestrator (Orchestrator Only)
+
+**User**: "Can you generate a class diagram for this code?"
+
+```python
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+        
+    def get_profile(self):
+        return f"{self.name} <{self.email}>"
+
+class Admin(User):
+    def __init__(self, name, email, role):
+        super().__init__(name, email)
+        self.role = role
+        
+    def get_permissions(self):
+        return ["read", "write", "admin"]
+```
+
+**Claude**: "I'll generate a class diagram for your code."
+
+*Claude uses the generate_class_diagram tool*
+
+**Claude**: "Here's a class diagram representing your code:
+
+```mermaid
+classDiagram
+    User <|-- Admin
+    
+    class User {
+        +name: str
+        +email: str
+        +__init__(name, email)
+        +get_profile(): str
+    }
+    
+    class Admin {
+        +role: str
+        +__init__(name, email, role)
+        +get_permissions(): list
+    }
+```
+
+This diagram shows the inheritance relationship between the User and Admin classes, along with their respective attributes and methods."
+
 ## Testing
 
 Run the tests with pytest:
@@ -366,15 +498,36 @@ Run the tests with pytest:
 pytest tests/test_mermaid_server.py
 ```
 
+Or run end-to-end tests:
+
+```bash
+# Test standard server
+python -m src.mermaid.e2e_test --server-type standard
+
+# Test orchestrator server
+python -m src.mermaid.e2e_test --server-type orchestrator
+```
+
 ## Docker
 
 Build and run the Docker container:
 
 ```bash
 docker build -t mcp-mermaid-server -f Dockerfile.mermaid .
+
+# Run standard server
 docker run -i --rm \
   -e ANTHROPIC_API_KEY=your_api_key \
   -e DEFAULT_THEME=vibrant \
+  -e SERVER_TYPE=standard \
+  -v ~/.mermaid_themes.json:/root/.mermaid_themes.json \
+  mcp-mermaid-server
+
+# Run orchestrator server
+docker run -i --rm \
+  -e ANTHROPIC_API_KEY=your_api_key \
+  -e DEFAULT_THEME=vibrant \
+  -e SERVER_TYPE=orchestrator \
   -v ~/.mermaid_themes.json:/root/.mermaid_themes.json \
   mcp-mermaid-server
 ```
